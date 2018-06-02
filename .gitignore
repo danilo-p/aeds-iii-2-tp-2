@@ -2,3 +2,4 @@ obj
 .vscode
 vgcore.*
 tp2
+samples/result*

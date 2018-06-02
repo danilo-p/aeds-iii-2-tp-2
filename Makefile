@@ -16,7 +16,7 @@ main: main.o
 	gcc $(SRC) $(OBJ_DIR)/main.o -o $(BIN_DIR)/$(BIN_NAME) $(CFLAGS)
 
 main.o:
-	gcc -c $(SRC_DIR)/main.c -o $(OBJ_DIR)/main.o $(CFLAGS)
+	gcc -c $(SRC_DIR)/main.c -g -o $(OBJ_DIR)/main.o $(CFLAGS)
 
 setup:
 	mkdir -p $(BIN_DIR) $(OBJ_DIR)
