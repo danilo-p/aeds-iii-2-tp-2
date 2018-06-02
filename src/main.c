@@ -2,12 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-int smallest(int a, int b, int c) {
-    int s = a < b ? a : b;
-    s = s < c ? s : c;
-    return s;
-}
-
 char * read_until_endl() {
     int len = 0;
     char c = getchar();
@@ -27,44 +21,42 @@ char * read_until_endl() {
     return word;
 }
 
+int smallest(int a, int b, int c) {
+    int s = a < b ? a : b;
+    s = s < c ? s : c;
+    return s;
+}
+
 int minimum_edit_distance(char *a, char *b) {
-    int i, j, **distances, len_a, len_b;
+    int i, j;
 
-    len_a = strlen(a);
-    len_b = strlen(b);
+    int len_a = strlen(a), len_b = strlen(b);
 
-    distances = (int **) malloc(len_a * sizeof(int *));
-    for (i = 0; i < len_a; i += 1) {
-        distances[i] = (int *) malloc(len_b * sizeof(int));
+    int **distances = (int **) malloc((len_a + 1) * sizeof(int *));
+    for (i = 0; i <= len_a; i += 1) {
+        distances[i] = (int *) malloc((len_b + 1) * sizeof(int));
     }
 
-    for (i = 0; i < len_a; i += 1) {
-        for (j = 0; j < len_b; j += 1) {
+    for (i = 0; i <= len_a; i += 1) {
+        for (j = 0; j <= len_b; j += 1) {
             if (i == 0) {
                 distances[i][j] = j;
-                continue;
-            }
-
-            if (j == 0) {
+            } else if (j == 0) {
                 distances[i][j] = i;
-                continue;
+            } else if (a[i - 1] == b[j - 1]) {
+                distances[i][j] = distances[i - 1][j - 1];
+            } else {
+                distances[i][j] = 1 + smallest(
+                    distances[i][j-1],
+                    distances[i - 1][j],
+                    distances[i - 1][j - 1]
+                );
             }
-
-            int cost = 1;
-            if (a[i] == b[j]) {
-                cost = 0;
-            }
-
-            distances[i][j] = smallest(
-                cost + distances[i - 1][j - 1], // Replace
-                1 + distances[i][j-1], // Insert
-                1 + distances[i - 1][j] // Delete
-            );
         }
     }
 
-    int minumum_distance = distances[len_a - 1][len_b - 1];
-    for (i = 0; i < len_a; i += 1) {
+    int minumum_distance = distances[len_a][len_b];
+    for (i = 0; i <= len_a; i += 1) {
         free(distances[i]);
     }
     free(distances);
@@ -110,10 +102,17 @@ void dict_add_word(dict_t *dict, char *word, int distance) {
 }
 
 int compare_dict_words_distance(const void *a, const void *b) {
-    return (
-        (*((dict_word_t **) a))->distance >
-        (*((dict_word_t **) b))->distance
-    );
+    dict_word_t *casted_a = (*((dict_word_t **) a));
+    dict_word_t *casted_b = (*((dict_word_t **) b));
+
+    int distance_a = casted_a->distance;
+    int distance_b = casted_b->distance;
+
+    if (distance_a == distance_b) {
+        return strcmp(casted_a->word, casted_b->word);
+    }
+
+    return distance_a > distance_b;
 }
 
 void dict_order_by_distance(dict_t *dict) {
@@ -125,16 +124,11 @@ void dict_order_by_distance(dict_t *dict) {
     );
 }
 
-void dict_list_until_distance(dict_t *dict, int max_distance) {
+void dict_list(dict_t *dict) {
     int i;
-    dict_order_by_distance(dict);
     dict_word_t *aux;
     for (i = 0; i < dict->curr_size; i += 1) {
         aux = dict->words[i];
-        if (aux->distance > max_distance) {
-            break;
-        }
-
         printf("%s\n", aux->word);
     }
 }
@@ -161,10 +155,13 @@ int main() {
     for (i = 0; i < dict_size; i += 1) {
         aux_word = read_until_endl();
         aux_distance = minimum_edit_distance(word, aux_word);
-        dict_add_word(dict, aux_word, aux_distance);
+        if (aux_distance <= distance_limit) {
+            dict_add_word(dict, aux_word, aux_distance);
+        }
     }
 
-    dict_list_until_distance(dict, distance_limit);
+    dict_order_by_distance(dict);
+    dict_list(dict);
 
     dict_destroy(dict);
     free(word);
