@@ -148,7 +148,8 @@ auto_suggest_t *auto_suggest_create(char *reference, int dict_max_size) {
 /**
  * @brief Adds a new suggestion to the auto_suggest.
  * 
- * Time complexity: O(1)
+ * Let m the reference word length and n the new suggestion length:
+ * Time complexity: O(n*m)
  * Space complexity: O(1)
  * 
  * @param auto_suggest 
