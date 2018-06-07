@@ -42,14 +42,20 @@ int main() {
     scanf("%d\n", &distance_limit);
 
     char *aux = read_until_endl();
-    auto_suggest_t *auto_suggest = auto_suggest_create(aux, dict_size);
+    auto_suggest_t *auto_suggest = auto_suggest_create(
+        aux,
+        dict_size,
+        distance_limit
+    );
 
     for (i = 0; i < dict_size; i += 1) {
         aux = read_until_endl();
-        auto_suggest_add_suggestion(auto_suggest, aux);
+        if (!auto_suggest_add_suggestion(auto_suggest, aux)) {
+            free(aux);
+        }
     }
 
-    auto_suggest_list(auto_suggest, distance_limit);
+    auto_suggest_list(auto_suggest);
 
     auto_suggest_destroy(auto_suggest);
 

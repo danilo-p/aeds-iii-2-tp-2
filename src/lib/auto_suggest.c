@@ -121,6 +121,7 @@ void suggestion_destroy(suggestion_t *suggestion) {
  */
 struct auto_suggest {
     char *reference;
+    int max_distance;
     suggestion_t **dict;
     int dict_max_size;
     int dict_current_size;
@@ -134,11 +135,17 @@ struct auto_suggest {
  * 
  * @param reference The word that will be the reference for calculating distances
  * @param dict_max_size The maximum size of the dictionary
+ * @param max_distance The maximum levenshtein distance of the suggestions
  * @return auto_suggest_t* A pointer to the new auto_suggest
  */
-auto_suggest_t *auto_suggest_create(char *reference, int dict_max_size) {
+auto_suggest_t *auto_suggest_create(
+    char *reference,
+    int dict_max_size,
+    int max_distance
+) {
     auto_suggest_t *auto_suggest = (auto_suggest_t *) malloc(sizeof(auto_suggest_t));
     auto_suggest->reference = reference;
+    auto_suggest->max_distance = max_distance;
     auto_suggest->dict = (suggestion_t **) malloc(dict_max_size * sizeof(suggestion_t *));
     auto_suggest->dict_max_size = dict_max_size;
     auto_suggest->dict_current_size = 0;
@@ -154,14 +161,19 @@ auto_suggest_t *auto_suggest_create(char *reference, int dict_max_size) {
  * 
  * @param auto_suggest 
  * @param word 
+ * @return int True if the suggestion was added. False instead.
  */
-void auto_suggest_add_suggestion(auto_suggest_t *auto_suggest, char *word) {
+int auto_suggest_add_suggestion(auto_suggest_t *auto_suggest, char *word) {
     if (auto_suggest->dict_current_size < auto_suggest->dict_max_size) {
         int distance = levenshtein_distance(word, auto_suggest->reference);
-        suggestion_t *suggestion = suggestion_create(word, distance);
-        auto_suggest->dict[auto_suggest->dict_current_size] = suggestion;
-        auto_suggest->dict_current_size += 1;
+        if (distance <= auto_suggest->max_distance) {
+            suggestion_t *suggestion = suggestion_create(word, distance);
+            auto_suggest->dict[auto_suggest->dict_current_size] = suggestion;
+            auto_suggest->dict_current_size += 1;
+            return 1;
+        }
     }
+    return 0;
 }
 
 /**
@@ -217,17 +229,13 @@ void auto_suggest_order_by_distance(auto_suggest_t *auto_suggest) {
  * Space complexity: O(n)
  * 
  * @param auto_suggest The auto_suggest that holds the dictionary
- * @param max_distance The maximum levenshtein distance for the suggestions
  */
-void auto_suggest_list(auto_suggest_t *auto_suggest, int max_distance) {
+void auto_suggest_list(auto_suggest_t *auto_suggest) {
     auto_suggest_order_by_distance(auto_suggest);
     int i;
     suggestion_t *aux;
     for (i = 0; i < auto_suggest->dict_current_size; i += 1) {
         aux = auto_suggest->dict[i];
-        if (aux->distance > max_distance) {
-            break;
-        }
         printf("%s\n", aux->word);
     }
 }
