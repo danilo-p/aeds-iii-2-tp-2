@@ -31,8 +31,7 @@ char *read_until_endl() {
  * @brief The main function
  * 
  * Let n the dictionary size:
- * Program time complexity: O(n*log(n))
- * Program space complexity: O(n*log(n))
+ * Program time complexity: O(n²*m + n*log(n))
  * 
  * @return int The program status code
  */

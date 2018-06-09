@@ -7,7 +7,6 @@
  * @brief Take the smallest integer specified
  * 
  * Time complexity: O(1)
- * Space complexity: O(1)
  * 
  * @param a Any integer
  * @param b Any integer
@@ -103,7 +102,6 @@ suggestion_t *suggestion_create(char *word, int distance) {
  * @brief Deallocate the memory of the given suggestion
  * 
  * Time complexity: O(1)
- * Space complexity: O(1)
  * 
  * @param suggestion The suggestion to be destroyed
  */
@@ -164,16 +162,26 @@ auto_suggest_t *auto_suggest_create(
  * @return int True if the suggestion was added. False instead.
  */
 int auto_suggest_add_suggestion(auto_suggest_t *auto_suggest, char *word) {
-    if (auto_suggest->dict_current_size < auto_suggest->dict_max_size) {
-        int distance = levenshtein_distance(word, auto_suggest->reference);
-        if (distance <= auto_suggest->max_distance) {
-            suggestion_t *suggestion = suggestion_create(word, distance);
-            auto_suggest->dict[auto_suggest->dict_current_size] = suggestion;
-            auto_suggest->dict_current_size += 1;
-            return 1;
-        }
+    if (auto_suggest->dict_current_size + 1 > auto_suggest->dict_max_size) {
+        return 0;
     }
-    return 0;
+
+    if (
+        abs(strlen(word) - strlen(auto_suggest->reference)) >
+        auto_suggest->max_distance
+    ) {
+        return 0;
+    }
+
+    int distance = levenshtein_distance(word, auto_suggest->reference);
+    if (distance > auto_suggest->max_distance) {
+        return 0;
+    }
+
+    suggestion_t *suggestion = suggestion_create(word, distance);
+    auto_suggest->dict[auto_suggest->dict_current_size] = suggestion;
+    auto_suggest->dict_current_size += 1;
+    return 1;
 }
 
 /**
@@ -183,7 +191,6 @@ int auto_suggest_add_suggestion(auto_suggest_t *auto_suggest, char *word) {
  * have the same levenshtein distance, the alphabetical order is used instead.
  * 
  * Time complexity: O(1)
- * Space complexity: O(1)
  * 
  * @param a A suggestion
  * @param b Another suggestion
@@ -208,7 +215,6 @@ int compare_suggestions(const void *a, const void *b) {
  * 
  * Let n the auto_suggest dictionary size:
  * Time complexity: O(n*log(n))
- * Space complexity: O(n*log(n))
  * 
  * @param auto_suggest The auto_suggest that holds the dictionary
  */
@@ -225,8 +231,7 @@ void auto_suggest_order_by_distance(auto_suggest_t *auto_suggest) {
  * @brief List the suggestions that are lower than the specified distance.
  * 
  * Let n the auto_suggest dictionary size:
- * Time complexity: O(n)
- * Space complexity: O(n)
+ * Time complexity: O(n*log(n))
  * 
  * @param auto_suggest The auto_suggest that holds the dictionary
  */
@@ -244,7 +249,6 @@ void auto_suggest_list(auto_suggest_t *auto_suggest) {
  * @brief Destroys the auto_suggest, deallocating all the memory
  * 
  * Time complexity: O(1)
- * Space complexity: O(1)
  * 
  * @param auto_suggest The auto_suggest to be destroyed
  */
