@@ -30,8 +30,10 @@ char *read_until_endl() {
 /**
  * @brief The main function
  * 
- * Let n the dictionary size:
- * Program time complexity: O(n²*m + n*log(n))
+ * Let s the dictionary size, n the reference word length and d the maximum
+ * distance:
+ * Program time complexity on the worst case: O(s*n*(n+d))
+ * Program space complexity on the worst case: O(s*n*(n+d))
  * 
  * @return int The program status code
  */

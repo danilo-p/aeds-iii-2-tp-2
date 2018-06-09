@@ -153,9 +153,12 @@ auto_suggest_t *auto_suggest_create(
 /**
  * @brief Adds a new suggestion to the auto_suggest.
  * 
- * Let m the reference word length and n the new suggestion length:
- * Time complexity: O(n*m)
- * Space complexity: O(1)
+ * Let "n" the reference word length and "m" the new suggestion length. This
+ * function prunes inputs that require at least more inclusions/removals than
+ * the maximum distance "d". Given that, the maximum length of processed inputs
+ * is n + d.
+ * Time complexity: O(n*(n+d))
+ * Space complexity: O(n*(n+d))
  * 
  * @param auto_suggest 
  * @param word 
